@@ -1,6 +1,6 @@
 const { createCanvas } = require("canvas");
 
-const PIXEL_DENSITY = 1;
+const PIXEL_DENSITY = 2;
 const HEIGHT = 200 * PIXEL_DENSITY;
 const WIDTH = HEIGHT * 3; // maintain a 3:1 ratio
 
@@ -12,7 +12,7 @@ const WIDTH = HEIGHT * 3; // maintain a 3:1 ratio
  * @param {number} t
  * @param {...hillChartOptions} options
  */
-exports.drawHillChart = (t, options = { showLabels: true }) => {
+exports.streamHillChart = (t, options = { showLabels: true }) => {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const drawingCtx = canvas.getContext("2d");
 
@@ -29,7 +29,8 @@ exports.drawHillChart = (t, options = { showLabels: true }) => {
   drawPointOnCurve(drawingCtx, WIDTH, HEIGHT, t);
   drawLabels(drawingCtx, ybase, sx);
 
-  return canvas.toBuffer("image/png");
+  return canvas.toBuffer("image/jpeg");
+  // return canvas.createPNGStream();
 };
 
 /**
