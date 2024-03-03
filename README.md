@@ -67,6 +67,26 @@ http://localhost:3000/35?title=Amazing+new+feature&hideLabels=true
 
 ![Hillchart for "Amazing new feature" at 35% completion without labels](./images/hill-chart-at-35-Amazing_new_feature--no-labels.jpg)
 
+
+#### Choose your image format
+
+Use the path set the desired image format `jpg|png|svg` (default is `jpg`).
+
+```txt
+# For a JPG
+http://localhost:3000/35/jpg?title=As+a+JPG
+http://localhost:3000/35?title=As+a+JPG
+
+# For a PNG
+http://localhost:3000/35/png?title=As+a+PNG
+
+# For an SVG
+http://localhost:3000/35/svg?title=As+a+SVG
+```
+
+![Hillchart for "Amazing new feature" at 35% completion without labels](./images/hill-chart-at-35-Amazing_new_feature--no-labels.jpg)
+
+
 #### Download immediately
 
 Add the `download` parameter with _any_ value to initiate a download.

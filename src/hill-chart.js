@@ -1,4 +1,4 @@
-const { createCanvas } = require("canvas");
+const { createCanvas, Canvas } = require("canvas");
 
 const PIXEL_DENSITY = 2;
 const HEIGHT = 200 * PIXEL_DENSITY;
@@ -23,17 +23,19 @@ const styleConfig = {
  */
 exports.streamHillChart = (
   t,
+  type,
   options = { title: undefined, showLabels: true },
 ) => {
-  const canvas = createCanvas(WIDTH, HEIGHT);
-  const drawingCtx = canvas.getContext("2d");
-
   /*@type {hillChartOptions} */
   const defaultOptions = {
     title: undefined,
     showLabels: true,
   };
   options = Object.assign({}, defaultOptions, options);
+  type = type.toLowerCase();
+
+  const canvas = createCanvas(WIDTH, HEIGHT, type === "svg" ? type : null);
+  const drawingCtx = canvas.getContext("2d");
 
   const [xbase, ybase] = getPointOnCurve(WIDTH, HEIGHT, 0);
 
@@ -55,11 +57,19 @@ exports.streamHillChart = (
   //   backgroundIndex: 0,
   //   resolution: 144,
   // });
-  return canvas.toBuffer("image/jpeg", {
-    quality: 0.85,
-    progressive: true,
-    chromaSubsampling: true,
-  });
+  // return canvas.toBuffer("image/jpeg", {
+  //   quality: 0.85,
+  //   progressive: true,
+  //   chromaSubsampling: true,
+  // });
+  switch (type) {
+    case "png":
+      return canvas.createPNGStream();
+    case "svg":
+      return canvas.toBuffer();
+    default:
+      return canvas.createJPEGStream();
+  }
 };
 
 /**

@@ -1,6 +1,5 @@
 const Koa = require("koa");
 const Router = require("@koa/router");
-const stream = require("stream");
 const app = new Koa();
 const router = new Router();
 
@@ -13,13 +12,14 @@ const PORT = process.env.PORT || 3000;
  * @property {boolean} [hideLabels=false] - Hide the labels
  * @property {any} [download=false] - Immediately download the image. Any value triggers it
  */
-router.get("/:t", (ctx, next) => {
+router.get("/:t/:imageType?", (ctx, next) => {
   // ctx.router available
   //
   const q = ctx.request.query;
   const tRaw = parseInt(ctx.params.t);
-
-  // const tRaw = parseInt(ctx.params.t);
+  const imageType = ctx.params.imageType
+    ? ctx.params.imageType.toLowerCase()
+    : "jpg";
   // Restrict `t` to Numbers
   if (typeof tRaw !== "number" || Number.isNaN(tRaw)) {
     ctx.throw(422, "Parameter `t` must be a number");
@@ -30,16 +30,29 @@ router.get("/:t", (ctx, next) => {
 
   const dispositionType = q.download ? "attachment" : "inline";
   const cleanTitle = q.title ? "-" + q.title.replace(/\s/g, "_") : "";
-  const dispositionFilename = `hill-chart-at-${tClamped}${cleanTitle}.jpg`;
+  let mimeType = "";
 
-  ctx.type = "image/jpeg";
+  switch (imageType) {
+    case "png":
+      mimeType = "image/png";
+      break;
+    case "svg":
+      mimeType = "image/svg+xml";
+      break;
+    default:
+      mimeType = "image/jpeg";
+      break;
+  }
+
+  ctx.type = mimeType;
+  const dispositionFilename = `hill-chart-at-${tClamped}${cleanTitle}.${imageType}`;
   ctx.set(
     "Content-Disposition",
     `${dispositionType}; filename="${dispositionFilename}"`,
   );
   // ctx.set("X-Content-Type-Options", "nosniff");
   ctx.set("Cache-Control", "public, max-age:86400");
-  ctx.body = streamHillChart(t, {
+  ctx.body = streamHillChart(t, imageType, {
     title: q.title || "",
     showLabels: !!!q.hideLabels,
   });
