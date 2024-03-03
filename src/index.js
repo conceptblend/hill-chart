@@ -7,8 +7,14 @@ const router = new Router();
 const { streamHillChart } = require("./hill-chart");
 const PORT = process.env.PORT || 3000;
 
+/**
+ * @typedef {Object} hillChartPublicOptions
+ * @property {string} [title] - The title for the image
+ * @property {boolean} [hideLabels=false] - Hide the labels
+ */
 router.get("/:t", (ctx, next) => {
   // ctx.router available
+  //
   const q = ctx.request.query;
   const tRaw = parseInt(ctx.params.t);
 
@@ -28,7 +34,10 @@ router.get("/:t", (ctx, next) => {
   );
   // ctx.set("X-Content-Type-Options", "nosniff");
   ctx.set("Cache-Control", "public, max-age:86400");
-  ctx.body = streamHillChart(t);
+  ctx.body = streamHillChart(t, {
+    title: q.title || "",
+    showLabels: !!!q.hideLabels,
+  });
 });
 
 app.use(router.routes()).use(router.allowedMethods());
