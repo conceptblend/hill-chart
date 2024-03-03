@@ -2,7 +2,7 @@ const { createCanvas } = require("canvas");
 
 const PIXEL_DENSITY = 2;
 const HEIGHT = 200 * PIXEL_DENSITY;
-const WIDTH = HEIGHT * 3; // maintain a 3:1 ratio
+const WIDTH = HEIGHT * 2.5; // maintain a 3:1 ratio
 
 const styleConfig = {
   backgroundColor: "#FFFFFF",
