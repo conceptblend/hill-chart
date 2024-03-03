@@ -5,7 +5,7 @@ const app = new Koa();
 const router = new Router();
 
 const { streamHillChart } = require("./hill-chart");
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 router.get("/:t", (ctx, next) => {
   // ctx.router available
