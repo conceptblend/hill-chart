@@ -5,7 +5,7 @@ const app = new Koa();
 const router = new Router();
 
 const { streamHillChart } = require("./hill-chart");
-const PORT = 80;
+const PORT = 3000;
 
 router.get("/:t", (ctx, next) => {
   // ctx.router available
@@ -33,5 +33,6 @@ router.get("/:t", (ctx, next) => {
 
 app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(PORT);
-// console.log(`Listening on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Listening on http://localhost:${PORT}`);
+});
