@@ -14,15 +14,26 @@ const styleConfig = {
 
 /**
  * @typedef {Object} hillChartOptions
- * @property {boolean} showLabels - Show the labels or not
+ * @property {boolean} [showLabels=true] - Show the labels or not
+ * @property {string} [title] - the title for the image
  */
 /**
  * @param {number} t
  * @param {...hillChartOptions} options
  */
-exports.streamHillChart = (t, options = { showLabels: true }) => {
+exports.streamHillChart = (
+  t,
+  options = { title: undefined, showLabels: true },
+) => {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const drawingCtx = canvas.getContext("2d");
+
+  /*@type {hillChartOptions} */
+  const defaultOptions = {
+    title: undefined,
+    showLabels: true,
+  };
+  options = Object.assign({}, defaultOptions, options);
 
   const [xbase, ybase] = getPointOnCurve(WIDTH, HEIGHT, 0);
 
@@ -35,7 +46,8 @@ exports.streamHillChart = (t, options = { showLabels: true }) => {
   drawAreaUnderCurve(drawingCtx, ybase, sx, sx + 0.25);
   drawCurve(drawingCtx, WIDTH, HEIGHT);
   drawPointOnCurve(drawingCtx, WIDTH, HEIGHT, t);
-  drawLabels(drawingCtx, ybase, sx);
+  options.showLabels && drawLabels(drawingCtx, ybase, sx);
+  options.title && drawTitle(drawingCtx, options.title);
 
   // return canvas.toBuffer("image/png", {
   //   compressionLevel: 3,
@@ -60,7 +72,7 @@ function drawCurve(drawingCtx, w, h) {
   const mid = w * 0.5;
   const xoffset = w * 0.2;
   const ybase = h - inset,
-    ypeak = inset;
+    ypeak = inset * 2;
 
   /**
    * Divide the curve into quarters and draw divider lines
@@ -125,7 +137,7 @@ function getPointOnCurve(w, h, t) {
   const mid = w * 0.5;
   const xoffset = w * 0.2;
   const ybase = h - inset,
-    ypeak = inset;
+    ypeak = inset * 2;
 
   let x, y;
 
@@ -182,6 +194,20 @@ function drawLabels(drawingCtx, ybase, sx) {
   drawingCtx.fillText(labels[0], l1x, ybase + textSize * 1.25);
   drawingCtx.fillStyle = styleConfig.baseColor; //c(sx, 0.5, 1.0);
   drawingCtx.fillText(labels[1], l2x, ybase + textSize * 1.25);
+  drawingCtx.restore();
+}
+
+function drawTitle(drawingCtx, title) {
+  if (title === undefined || title === "") return;
+
+  const textSize = 16 * PIXEL_DENSITY;
+
+  drawingCtx.save();
+  drawingCtx.textAlign = "left";
+  drawingCtx.font = `bold ${textSize}px sans-serif`;
+  drawingCtx.textRendering = "optimizeLegibility";
+  drawingCtx.fillStyle = styleConfig.baseColor; // c(sx, 0, 0.5);
+  drawingCtx.fillText(title, 16 * PIXEL_DENSITY, 16 * PIXEL_DENSITY + textSize);
   drawingCtx.restore();
 }
 
