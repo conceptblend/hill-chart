@@ -4,6 +4,14 @@ const PIXEL_DENSITY = 2;
 const HEIGHT = 200 * PIXEL_DENSITY;
 const WIDTH = HEIGHT * 3; // maintain a 3:1 ratio
 
+const styleConfig = {
+  backgroundColor: "#FFFFFF",
+  subtleColor: "#cccccc",
+  baseColor: "#000000",
+  dotFill: "#00A0F8",
+  hillFill: "#D3EBF8",
+};
+
 /**
  * @typedef {Object} hillChartOptions
  * @property {boolean} showLabels - Show the labels or not
@@ -21,7 +29,7 @@ exports.streamHillChart = (t, options = { showLabels: true }) => {
   const sx = Math.floor(t * 4) * 0.25; // Calculate the quarter
 
   drawingCtx.save();
-  drawingCtx.fillStyle = "#FFFFFF";
+  drawingCtx.fillStyle = styleConfig.backgroundColor;
   drawingCtx.fillRect(0, 0, WIDTH, HEIGHT);
   drawingCtx.restore();
   drawAreaUnderCurve(drawingCtx, ybase, sx, sx + 0.25);
@@ -29,8 +37,17 @@ exports.streamHillChart = (t, options = { showLabels: true }) => {
   drawPointOnCurve(drawingCtx, WIDTH, HEIGHT, t);
   drawLabels(drawingCtx, ybase, sx);
 
-  return canvas.toBuffer("image/jpeg");
-  // return canvas.createPNGStream();
+  // return canvas.toBuffer("image/png", {
+  //   compressionLevel: 3,
+  //   filters: canvas.PNG_ALL_FILTERS,
+  //   backgroundIndex: 0,
+  //   resolution: 144,
+  // });
+  return canvas.toBuffer("image/jpeg", {
+    quality: 0.85,
+    progressive: true,
+    chromaSubsampling: true,
+  });
 };
 
 /**
@@ -56,9 +73,10 @@ function drawCurve(drawingCtx, w, h) {
    * Draw divider lines
    **/
   drawingCtx.save();
-  drawingCtx.strokeStyle = "#AAAAAA";
-  drawingCtx.setLineDash([0.5 * inset, 0.5 * inset]);
-  drawingCtx.lineWidth = 1;
+  drawingCtx.strokeStyle = styleConfig.subtleColor;
+  drawingCtx.setLineDash([0.25 * inset, 0.25 * inset]);
+  drawingCtx.lineCap = "round";
+  drawingCtx.lineWidth = 1 * PIXEL_DENSITY;
   line(drawingCtx, q2x, ybase, q2x, q2y);
   line(drawingCtx, q1x, ybase, q1x, q1y);
   line(drawingCtx, q3x, ybase, q3x, q3y);
@@ -68,12 +86,17 @@ function drawCurve(drawingCtx, w, h) {
    * Draw the curve
    **/
   drawingCtx.save();
-  drawingCtx.lineWidth = 4;
+  drawingCtx.strokeStyle = styleConfig.subtleColor;
+  // drawingCtx.fillStyle = styleConfig.subtleColor;
+  drawingCtx.lineWidth = 1 * PIXEL_DENSITY;
+  drawingCtx.lineCap = "round";
   drawingCtx.beginPath();
   drawingCtx.moveTo(0, ybase);
   drawingCtx.bezierCurveTo(xoffset, ybase, mid - xoffset, ypeak, mid, ypeak);
   drawingCtx.bezierCurveTo(mid + xoffset, ypeak, w - xoffset, ybase, w, ybase);
+  drawingCtx.closePath();
   drawingCtx.stroke();
+  // drawingCtx.fill();
   drawingCtx.restore();
 }
 
@@ -124,12 +147,12 @@ function getPointOnCurve(w, h, t) {
  */
 function drawPointOnCurve(drawingCtx, w, h, t) {
   const [x, y] = getPointOnCurve(w, h, t);
-  const radius = 0.5 * Math.max(8, w * 0.025);
+  const radius = 0.5 * Math.max(12 * PIXEL_DENSITY, w * 0.0125);
 
   drawingCtx.save();
-  drawingCtx.strokeStyle = "#FFFFFF";
-  drawingCtx.fillStyle = "#F802C1";
-  drawingCtx.lineWidth = 2;
+  drawingCtx.strokeStyle = styleConfig.backgroundColor;
+  drawingCtx.lineWidth = 1 * PIXEL_DENSITY;
+  drawingCtx.fillStyle = styleConfig.baseColor;
   drawingCtx.beginPath();
   drawingCtx.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
   drawingCtx.fill();
@@ -143,20 +166,22 @@ function drawPointOnCurve(drawingCtx, w, h, t) {
  * @param {number} sx - Not really sure
  */
 function drawLabels(drawingCtx, ybase, sx) {
-  const labels = ["Figuring things out", "Making it happen"];
+  const labels = ["FIGURING THINGS OUT", "MAKING IT HAPPEN"];
   const [l1x, l1y] = getPointOnCurve(WIDTH, HEIGHT, 0.25);
   const [l2x, l2y] = getPointOnCurve(WIDTH, HEIGHT, 0.75);
 
-  const c = (v, min, max) => (v >= min && v < max ? "#333333" : "#AAAAAA");
-  const textSize = 12 * PIXEL_DENSITY;
+  // const c = (v, min, max) =>
+  //   v >= min && v < max ? styleConfig.baseColor : styleConfig.subtleColor;
+  const textSize = 11 * PIXEL_DENSITY;
 
   drawingCtx.save();
   drawingCtx.textAlign = "center";
   drawingCtx.font = `${textSize}px sans-serif`;
-  drawingCtx.fillStyle = c(sx, 0, 0.5);
-  drawingCtx.fillText(labels[0], l1x, ybase + textSize);
-  drawingCtx.fillStyle = c(sx, 0.5, 1.0);
-  drawingCtx.fillText(labels[1], l2x, ybase + textSize);
+  drawingCtx.textRendering = "optimizeLegibility";
+  drawingCtx.fillStyle = styleConfig.baseColor; // c(sx, 0, 0.5);
+  drawingCtx.fillText(labels[0], l1x, ybase + textSize * 1.25);
+  drawingCtx.fillStyle = styleConfig.baseColor; //c(sx, 0.5, 1.0);
+  drawingCtx.fillText(labels[1], l2x, ybase + textSize * 1.25);
   drawingCtx.restore();
 }
 
@@ -185,7 +210,7 @@ function drawAreaUnderCurve(drawingCtx, ybase, x1, x2) {
   let [q2x, q2y] = getPointOnCurve(WIDTH, HEIGHT, x2);
 
   drawingCtx.save();
-  drawingCtx.fillStyle = "#F8F4DA";
+  drawingCtx.fillStyle = styleConfig.hillFill;
   // Draw the shape in a clockwise direction, starting with the lower-left vertex.
   drawingCtx.beginPath();
   drawingCtx.moveTo(q1x, q1y);

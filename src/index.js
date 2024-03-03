@@ -26,8 +26,8 @@ router.get("/:t", (ctx, next) => {
     "Content-Disposition",
     `inline; filename="hill-chart-at-${tClamped}.jpg"`,
   );
-  ctx.set("X-Content-Type-Options", "nosniff");
-  ctx.set("Cache-Control", "public");
+  // ctx.set("X-Content-Type-Options", "nosniff");
+  ctx.set("Cache-Control", "public, max-age:86400");
   ctx.body = streamHillChart(t);
 });
 
