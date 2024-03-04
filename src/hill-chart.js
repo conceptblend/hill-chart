@@ -64,11 +64,13 @@ exports.streamHillChart = (
   // });
   switch (type) {
     case "png":
-      return canvas.createPNGStream();
+      return canvas.toBuffer("image/png");
+    // return canvas.createPNGStream();
     case "svg":
       return canvas.toBuffer();
     default:
-      return canvas.createJPEGStream();
+      return canvas.toBuffer("image/jpeg");
+    // return canvas.createJPEGStream();
   }
 };
 
