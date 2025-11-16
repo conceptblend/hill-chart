@@ -6,6 +6,10 @@ const router = new Router();
 const { streamHillChart } = require("./hill-chart");
 const PORT = process.env.PORT || 3000;
 
+const interpretHideLabels = (hideLabels) => {
+  return hideLabels === "true" || hideLabels === "1";
+};
+
 /**
  * @typedef {Object} hillChartPublicOptions
  * @property {string} [title] - The title for the image
@@ -31,25 +35,20 @@ router
 
     ctx.type = "image/png";
     const dispositionFilename = `hill-chart-at-${tClamped}${cleanTitle}.${imageType}`;
-    ctx.set(
-      "Content-Disposition",
-      `${dispositionType}; filename="${dispositionFilename}"`,
-    );
+    ctx.set("Content-Disposition", `${dispositionType}; filename="${dispositionFilename}"`);
     // ctx.set("X-Content-Type-Options", "nosniff");
     ctx.set("Cache-Control", "public, max-age:86400");
     ctx.body = streamHillChart(t, imageType, {
       title: q.title || "",
-      showLabels: !!!q.hideLabels,
+      showLabels: !interpretHideLabels(q.hideLabels),
     });
   })
-  .get("/v2/:t/:imageType?", (ctx, next) => {
+  .get("/v2/:t{/:imageType}", (ctx, next) => {
     // ctx.router available
     //
     const q = ctx.request.query;
     const tRaw = parseInt(ctx.params.t);
-    const imageType = ctx.params.imageType
-      ? ctx.params.imageType.toLowerCase()
-      : "jpg";
+    const imageType = ctx.params.imageType ? ctx.params.imageType.toLowerCase() : "jpg";
     // Restrict `t` to Numbers
     if (typeof tRaw !== "number" || Number.isNaN(tRaw)) {
       ctx.throw(422, "Parameter `t` must be a number");
@@ -76,15 +75,13 @@ router
 
     ctx.type = mimeType;
     const dispositionFilename = `hill-chart-at-${tClamped}${cleanTitle}.${imageType}`;
-    ctx.set(
-      "Content-Disposition",
-      `${dispositionType}; filename="${dispositionFilename}"`,
-    );
+    ctx.set("Content-Disposition", `${dispositionType}; filename="${dispositionFilename}"`);
     // ctx.set("X-Content-Type-Options", "nosniff");
     ctx.set("Cache-Control", "public, max-age:86400");
+    console.log(!interpretHideLabels(q.hideLabels));
     ctx.body = streamHillChart(t, imageType, {
       title: q.title || "",
-      showLabels: !!!q.hideLabels,
+      showLabels: !interpretHideLabels(q.hideLabels),
     });
   });
 
