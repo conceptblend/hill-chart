@@ -78,7 +78,6 @@ router
     ctx.set("Content-Disposition", `${dispositionType}; filename="${dispositionFilename}"`);
     // ctx.set("X-Content-Type-Options", "nosniff");
     ctx.set("Cache-Control", "public, max-age:86400");
-    console.log(!interpretHideLabels(q.hideLabels));
     ctx.body = streamHillChart(t, imageType, {
       title: q.title || "",
       showLabels: !interpretHideLabels(q.hideLabels),
