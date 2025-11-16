@@ -17,11 +17,12 @@
  *
  * Or test against a different URL
  * ```zsh
- * TEST_BASE_URL=http://your-server.com node test-api.js
+ * TEST_BASE_URL=https://your-server.com node test-api.js
  * ```
  */
 
 const http = require("http");
+const https = require("https");
 const { streamHillChart } = require("./hill-chart");
 
 const BASE_URL = process.env.TEST_BASE_URL || "http://localhost:3000";
@@ -66,7 +67,10 @@ function makeRequest(path, options = {}) {
       });
     }
 
-    const req = http.request(url, { method: options.method || "GET" }, (res) => {
+    // Use https module for https:// URLs, http module for http:// URLs
+    const client = url.protocol === "https:" ? https : http;
+
+    const req = client.request(url, { method: options.method || "GET" }, (res) => {
       const chunks = [];
       res.on("data", (chunk) => chunks.push(chunk));
       res.on("end", () => {
@@ -441,6 +445,7 @@ async function checkServer() {
     const res = await makeRequest("/v2/0/jpg");
     return res.status === 200;
   } catch (error) {
+    console.error(error);
     console.error(`\n✗ ERROR: Cannot connect to server at ${BASE_URL}`);
     console.error(`  Make sure the server is running: yarn start`);
     console.error(`  Or set TEST_BASE_URL environment variable\n`);
